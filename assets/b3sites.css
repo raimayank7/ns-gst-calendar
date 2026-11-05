@@ -1,0 +1,24 @@
+/* gst-calendar (Batch 3), on top of gsttools.css */
+.gc-chk{display:flex;flex-direction:column;gap:2px;margin:10px 0}
+.gc-l{list-style:none;padding:0;margin:6px 0}
+.gc-i{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:8px 0}
+.gc-d{display:flex;flex-direction:column;align-items:center;background:var(--surface2);border-radius:10px;padding:4px 0;direction:ltr}
+.gc-d b{font:700 1.25rem var(--font-head);line-height:1.1}
+.gc-d small{font-size:.75rem;color:var(--soft)}
+.gc-x{min-width:0}
+.gc-x b{display:block}
+.gc-x small{display:block;color:var(--soft);font-size:.85rem;overflow-wrap:anywhere}
+.gc-x a{font-size:.85rem}
+.gc-b{font-size:.78rem;font-weight:700;border-radius:999px;padding:3px 9px;background:var(--surface2);color:var(--soft);white-space:nowrap}
+.gc-b.soon{background:color-mix(in srgb,var(--amber) 20%,transparent);color:var(--ink)}
+.gc-b.now{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.gc-b.past{opacity:.7}
+.gc-mh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.gc-mh h2{margin:0;text-align:center;flex:1}
+@media (max-width:380px){.gc-i{grid-template-columns:46px minmax(0,1fr)}.gc-b{grid-column:2;justify-self:start}}
+
+@media print{
+  .gc-prof,.gc-mh .btn{display:none!important}
+  .gt-grid{display:block}
+  @page{size:A4;margin:12mm}
+}

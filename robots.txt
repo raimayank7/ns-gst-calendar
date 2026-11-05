@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gst-calendar.niveshsahayak.in/sitemap.xml
