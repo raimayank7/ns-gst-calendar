@@ -16,6 +16,7 @@
   var D22 = { '22': 1, '23': 1, '24': 1, '26': 1, '27': 1, '29': 1, '30': 1, '32': 1, '33': 1, '36': 1, '37': 1, '34': 1, '35': 1, '31': 1 };
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var LINK = { gstr1: 'https://gstr1.niveshsahayak.in/', gstr3b: 'https://gstr3b.niveshsahayak.in/', cmp08: 'https://cmp08.niveshsahayak.in/', tds: 'https://tds.niveshsahayak.in/' };
+  var FROM = '';   /* name of the saved business the state and filing were taken from */
   var P = { gst: 'monthly', state: '03', tds: false, adv: false, annual: true, g7: false, g8: false };
   var box, view;
 
@@ -82,6 +83,7 @@
       ['monthly', 'qrmp', 'comp', 'none'].map(function (v) { return '<option value="' + v + '"' + (P.gst === v ? ' selected' : '') + '>' + esc(T('gc.g.' + v)) + '</option>'; }).join('') + '</select>' +
       '<label class="gt-lbl" for="gc-st">' + esc(T('gc.state')) + '</label><select id="gc-st" data-p="state">' + st + '</select>' +
       '<div class="gc-chk">' + chk('tds', 'gc.c.tds') + chk('adv', 'gc.c.adv') + chk('annual', 'gc.c.annual') + chk('g7', 'gc.c.g7') + chk('g8', 'gc.c.g8') + '</div>' +
+      (FROM && !P.own ? '<p class="note gc-from">' + esc(T('gc.frombiz', { b: FROM })) + '</p>' : '') +
       '<p class="note">' + esc(T('gc.saved')) + '</p></div>';
   }
   function render() {
@@ -146,6 +148,7 @@
     box.addEventListener('change', function (e) {
       var k = e.target.getAttribute('data-p'); if (!k) return;
       P[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+      if (k === 'gst' || k === 'state') P.own = 1;   /* chosen by hand: the saved business no longer fills these */
       save(); render();
     });
     box.addEventListener('click', function (e) {
@@ -161,11 +164,15 @@
     box = $('#gc-tool'); if (!box) return;
     try { Object.assign(P, JSON.parse(localStorage.getItem('ns-gstcal') || '{}')); } catch (e) {}
     render(); wire();
-    NSStore.ready().then(function () { return NSStore.meta('gstcal'); }).then(function (m) { if (m) { Object.assign(P, m); render(); } return NSStore.list('biz'); }).then(function (bs) {
-      /* first visit: the state and scheme of the user's business, if one is saved (a suggestion they can change) */
-      var had = false; try { had = !!localStorage.getItem('ns-gstcal'); } catch (e) {}
-      if (had || !bs || !bs.length) return;
-      var b = bs[0]; if (b.state) P.state = b.state; if (b.reg === 'comp') P.gst = 'comp'; else if (b.reg === 'unreg') P.gst = 'none';
+    NSStore.ready().then(function () { return NSStore.meta('gstcal'); }).then(function (m) { if (m) { Object.assign(P, m); render(); } return Promise.all([NSStore.list('biz'), NSStore.meta('settings')]); }).then(function (x) {
+      /* until the user picks the state or the GST filing by hand: the state and scheme of their default business (a suggestion
+         they can change; QRMP is not kept with the business, so a regular business keeps monthly or QRMP as chosen here) */
+      var bs = x[0] || [], cfg = x[1] || {};
+      if (P.own || !bs.length) return;
+      var b = bs.filter(function (y) { return y.id === cfg.defBiz; })[0] || bs[0];
+      if (b.state) P.state = String(b.state).slice(0, 2);
+      if (b.reg === 'comp') P.gst = 'comp'; else if (b.reg === 'unreg') P.gst = 'none'; else if (P.gst === 'comp' || P.gst === 'none') P.gst = 'monthly';
+      FROM = b.name || '';
       render();
     }).catch(function () {});
     try { if (localStorage.getItem('ns-gstcal-note') && window.Notification && Notification.permission === 'granted') notifyDue(false); } catch (e) {}
