@@ -178,6 +178,6 @@
     try { if (localStorage.getItem('ns-gstcal-note') && window.Notification && Notification.permission === 'granted') notifyDue(false); } catch (e) {}
     document.addEventListener('ns-lang', render);
   }
-  NS.gstcal = { dueIn: dueIn };
+  NS.gstcal = { dueIn: dueIn, upcoming: upcoming };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
